@@ -30,7 +30,7 @@ Resources:
       MasterUsername: admin
       ManageMasterUserPassword: true
       MasterUserSecret:
-        SecretArn: !GetAtt MySecretDB.Arn
+        SecretArn: !Ref MySecretDB
       PubliclyAccessible: false
       DBName: mydatabase
       StorageType: gp2
@@ -45,4 +45,4 @@ Outputs:
 
   SecretName:
     Description: Nombre del secret creado
-    Value: !GetAtt MySecretDB.Arn
+    Value: !Ref MySecretDB
