@@ -27,7 +27,7 @@ Resources:
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
       EngineVersion: 8.0.41
-      MasterUsername: admin
+      #MasterUsername: admin
       MasterUserSecret:
         SecretArn: !Ref MySecretDB
       PubliclyAccessible: true
