@@ -28,10 +28,9 @@ Resources:
       Engine: MySQL
       EngineVersion: 8.0.41
       MasterUsername: admin
-      ManageMasterUserPassword: true
       MasterUserSecret:
         SecretArn: !Ref MySecretDB
-      PubliclyAccessible: false
+      PubliclyAccessible: true
       DBName: mydatabase
       StorageType: gp2
       BackupRetentionPeriod: 0
@@ -40,7 +39,7 @@ Resources:
 
 Outputs:
   RDSInstanceEndpoint:
-    Description: Endpoint de conexión al RDS
+    Description: Endpoint de conexion al RDS
     Value: !GetAtt MyDBInstance.Endpoint.Address
 
   SecretName:
