@@ -3,23 +3,7 @@ Description: Crear instancia RDS MySQL (capa gratuita) con credenciales en Secre
 
 Resources:
 
-  MySecretDB:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: MySecretForDB
-      Description: "This secret has a dynamically generated secret password."
-      GenerateSecretString:
-        SecretStringTemplate: '{"username": "admin"}'
-        GenerateStringKey: "password"
-        PasswordLength: 10
-        ExcludeCharacters: '"@/\'
-      Tags:
-        -
-          Key: AppName
-          Value: DB
-
   MyDBInstance:
-    DependsOn: MySecretDB
     Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: my-mysql-db
@@ -27,9 +11,8 @@ Resources:
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
       EngineVersion: 8.0.41
-      #MasterUsername: admin
-      MasterUserSecret:
-        SecretArn: !Ref MySecretDB
+      MasterUsername: admin
+      ManageMasterUserPassword: true
       PubliclyAccessible: true
       DBName: mydatabase
       StorageType: gp2
@@ -41,7 +24,3 @@ Outputs:
   RDSInstanceEndpoint:
     Description: Endpoint de conexion al RDS
     Value: !GetAtt MyDBInstance.Endpoint.Address
-
-  SecretName:
-    Description: Nombre del secret creado
-    Value: !Ref MySecretDB
