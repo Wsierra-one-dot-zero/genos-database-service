@@ -28,7 +28,7 @@ Resources:
       EngineVersion: 8.0.41
       MasterUsername: admin
       MasterUserSecret:
-        SecretArn: !GetAtt MySecretDB.Arn
+        SecretArn: !Ref MySecretDB
       PubliclyAccessible: false
       DBName: mydatabase
       StorageType: gp2
