@@ -25,8 +25,8 @@ Resources:
       Name: !Sub '${EnvironmentName}/loans/data/credentials'
       Description: !Sub '${EnvironmentName} RDS secret'
       GenerateSecretString:
-        SecretStringTemplate: !Sub '{"username": "admin"}'
-        GenerateStringKey: password
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: "password"
         ExcludeCharacters: '"@/\'
 
   DBSubnetGroup:
@@ -47,8 +47,8 @@ Resources:
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
       EngineVersion: 8.0.41
-      MasterUsername: admin
-      MasterUserPassword: !Sub '{{resolve:secretsmanager:${RDSSecretsManager}:SecretString:Password}}'
+      MasterUsername: !Sub '{{resolve:secretsmanager:${RDSSecretsManager}:SecretString:username}}'
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${RDSSecretsManager}:SecretString:password}}'
       PubliclyAccessible: true
       DBName: loans
       StorageType: gp2
