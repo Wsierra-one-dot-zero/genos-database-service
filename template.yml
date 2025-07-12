@@ -36,7 +36,7 @@ Resources:
   RDSSecretsManager:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub '${EnvironmentName}/loans/database/credentials'
+      Name: !Sub '${EnvironmentName}/loans/db/credentials'
       Description: !Sub '${EnvironmentName} RDS secret'
       GenerateSecretString:
         SecretStringTemplate: !Sub '{"username": "admin"}'
