@@ -22,11 +22,11 @@ Resources:
   RDSSecretsManager:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub '${EnvironmentName}/loans/db/credentials'
+      Name: !Sub '${EnvironmentName}/loans/data/credentials'
       Description: !Sub '${EnvironmentName} RDS secret'
       GenerateSecretString:
         SecretStringTemplate: !Sub '{"username": "admin"}'
-        GenerateStringKey: Password
+        GenerateStringKey: password
         ExcludeCharacters: '"@/\'
 
   DBSubnetGroup:
