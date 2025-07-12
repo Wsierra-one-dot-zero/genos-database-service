@@ -12,6 +12,14 @@
         {
           "ParameterKey": "SecurityGroup",
           "ParameterValue": "${${ENVIRONMENT_ID}-Base-Infraestructure-Stack:SecurityGroupId}"
+        },
+        {
+          "ParameterKey": "PublicSubnet1",
+          "ParameterValue": "${${ENVIRONMENT_ID}-Base-Infraestructure-Stack:PublicSubnet1}"
+        },
+        {
+          "ParameterKey": "PublicSubnet2",
+          "ParameterValue": "${${ENVIRONMENT_ID}-Base-Infraestructure-Stack:PublicSubnet2}"
         }
       ]
     }
