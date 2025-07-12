@@ -16,7 +16,7 @@ Resources:
   DBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: !Sub '${Environment}-db-instance'
+      DBInstanceIdentifier: !Sub '${EnvironmentName}-db-instance'
       AllocatedStorage: 20
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
@@ -36,8 +36,8 @@ Resources:
   RDSSecretsManager:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub '${Environment}/loans/database/credentials'
-      Description: !Sub '${Environment} RDS secret'
+      Name: !Sub '${EnvironmentName}/loans/database/credentials'
+      Description: !Sub '${EnvironmentName} RDS secret'
       GenerateSecretString:
         SecretStringTemplate: !Sub '{"username": "admin"}'
         GenerateStringKey: Password
