@@ -13,7 +13,19 @@ Parameters:
 
 Resources:
 
+  RDSSecretsManager:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${EnvironmentName}/loans/db/credentials'
+      Description: !Sub '${EnvironmentName} RDS secret'
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "admin"}'
+        GenerateStringKey: Password
+        ExcludeCharacters: '"@/\'
+
   DBInstance:
+    DependsOn:
+      - RDSSecretsManager
     Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: !Sub '${EnvironmentName}-db-instance'
@@ -32,17 +44,11 @@ Resources:
       VPCSecurityGroups:
         - !Ref SecurityGroup
 
-  
-  RDSSecretsManager:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      Name: !Sub '${EnvironmentName}/loans/db/credentials'
-      Description: !Sub '${EnvironmentName} RDS secret'
-      GenerateSecretString:
-        SecretStringTemplate: !Sub '{"username": "admin"}'
-        GenerateStringKey: Password
 
   RDSSecretAttachment:
+    DependsOn:
+      - DBInstance
+      - RDSSecretsManager
     Type: AWS::SecretsManager::SecretTargetAttachment
     Properties:
       SecretId: !Ref RDSSecretsManager
