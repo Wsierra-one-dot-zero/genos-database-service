@@ -1,0 +1,18 @@
+{
+    "stack-outputs": [
+      "${ENVIRONMENT_ID}-Base-Infraestructure-Stack"
+    ],
+    "deploy": {
+      "stack-name": "${ENVIRONMENT_ID}-RDS-Stack",
+      "Parameters": [
+        {
+          "ParameterKey": "EnvironmentName",
+          "ParameterValue": "${ENVIRONMENT_ID}"
+        },
+        {
+          "ParameterKey": "SecurityGroup",
+          "ParameterValue": "${${ENVIRONMENT_ID}-Base-Infraestructure-Stack:SecurityGroupId}"
+        }
+      ]
+    }
+  }

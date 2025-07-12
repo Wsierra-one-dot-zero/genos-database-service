@@ -1,26 +1,55 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Crear instancia RDS MySQL (capa gratuita) con credenciales en Secrets Manager
 
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    Description: Ambiente de despliegue
+  SecurityGroup:
+    Type: String
+    Description: Grupo de seguridad
+
+
 Resources:
 
-  MyDBInstance:
+  DBInstance:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: my-mysql-db
+      DBInstanceIdentifier: !Sub '${Environment}-db-instance'
       AllocatedStorage: 20
       DBInstanceClass: db.t4g.micro
       Engine: MySQL
       EngineVersion: 8.0.41
       MasterUsername: admin
-      ManageMasterUserPassword: true
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${RDSSecretsManager}:SecretString:Password}}'
       PubliclyAccessible: true
-      DBName: mydatabase
+      DBName: loans
       StorageType: gp2
       BackupRetentionPeriod: 0
       MultiAZ: false
       DeletionProtection: false
+      VPCSecurityGroups:
+        - !Ref SecurityGroup
+
+  
+  RDSSecretsManager:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${Environment}/loans/database/credentials'
+      Description: !Sub '${Environment} RDS secret'
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "admin"}'
+        GenerateStringKey: Password
+
+  RDSSecretAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Properties:
+      SecretId: !Ref RDSSecretsManager
+      TargetId: !Ref DBInstance
+      TargetType: AWS::RDS::DBInstance
 
 Outputs:
   RDSInstanceEndpoint:
     Description: Endpoint de conexion al RDS
-    Value: !GetAtt MyDBInstance.Endpoint.Address
+    Value: !GetAtt DBInstance.Endpoint.Address

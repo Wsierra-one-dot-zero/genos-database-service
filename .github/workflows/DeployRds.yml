@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      environment_name:
+        description: 'Deployment environment (dev, staging, production)'
+        required: true
+        default: 'dev'
+      region:
+        description: 'AWS region'
+        required: true
+        default: 'us-east-1'
+
+env:
+  ENVIRONMENT_ID: ${{ github.event.inputs.environment_name || 'dev' }}
+  REGION: ${{ github.event.inputs.region || 'us-east-1' }}
 
 permissions:
   id-token: write
@@ -21,11 +35,93 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          aws-region: us-east-1
+          aws-region: ${{ env.REGION }}
+
+      - name: Get config file
+        id: get_infra_outputs
+        run: |
+          if [ -f config/config.json ]; then
+            echo "[INFO]Config file found"
+            echo "[EXEC] cp config/config.json ."
+            cp config/config.json .
+              ls config.json
+            else
+              echo "[ERROR]Config file not found"
+            fi
+  
+      - name: Insert environment variables
+        run: |
+          ENVIRONMENT_VAR='[
+              ["ENVIRONMENT_ID", "${{ env.ENVIRONMENT_ID }}"],
+              ["REGION", "${{ env.REGION }}"]
+          ]'
+  
+            echo "$ENVIRONMENT_VAR" | jq -c '.[]' | while read -r item; do
+                key=$(echo "$item" | jq -r '.[0]')
+                value=$(echo "$item" | jq -r '.[1]')
+                echo "Clave: $key, Valor: $value"
+  
+                sed -i "s|\${${key}}|$value|g" config.json
+  
+            done
+  
+            cat config.json
+      
+      - name: Insert variables from stack outputs
+        run: |
+            
+            if [[ ! -f "config.json" ]]; then
+              echo "Error: El archivo config.json no existe."
+              exit 1
+            fi
+  
+            config_json=$(cat config.json)
+  
+            stack_outputs=$(echo "$config_json" | jq -r '.["stack-outputs"][]' 2>/dev/null)
+  
+            if [[ -z "$stack_outputs" ]]; then
+              echo "No se encontraron stacks en 'stack-outputs'."
+              exit 0
+            fi
+  
+            AWS_TARGET_REGION=${{ env.REGION }}
+  
+            for stack_name in $stack_outputs; do
+              echo "Procesando stack: $stack_name"
+  
+              stack_json=$(aws cloudformation describe-stacks --region "$AWS_TARGET_REGION" --stack-name "$stack_name")
+  
+              outputs=$(echo "$stack_json" | jq -c '.Stacks[0].Outputs // []')
+  
+              if [[ "$outputs" == "[]" ]]; then
+                echo "No hay salidas para el stack: $stack_name"
+                continue
+              fi
+  
+              echo "$outputs" | jq -c '.[]' | while read -r output; do
+                output_key=$(echo "$output" | jq -r '.OutputKey')
+                output_value=$(echo "$output" | jq -r '.OutputValue')
+  
+                key="${stack_name}:${output_key}"
+  
+                echo "Reemplazando clave: ${key} con valor: ${output_value}"
+  
+                sed -i "s|\${${key}}|${output_value}|g" config.json
+              done
+            done
+            echo "Archivo config.json actualizado:"
+            cat config.json | jq .
+            
+      - name: parameter-overrides for cloudformation
+        run: |
+          jq -r '.deploy.Parameters' config.json > config-parameters.json
+  
+          cat config-parameters.json
+  
 
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: Data-Base-Stack
           template: template.yml
-          parameter-overrides: ""
+          parameter-overrides: "file://config-parameters.json"
